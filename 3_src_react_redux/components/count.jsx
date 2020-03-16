@@ -27,13 +27,16 @@ export default class Count extends Component {
   //延迟0.5秒加
   incrementAsync = () => {
     let { value } = this.refs.numberNode
-    this.props.incrementAsync(value * 1,500)
+    setTimeout(() => {
+      this.props.increment(value * 1)
+    }, 500)
   }
 
   render() {
+    console.log(this.props);
     return (
       <div>
-        <h2>当前总数为：{this.props.number} 下面的人总数为:{this.props.personCount}</h2>
+        <h2>当前总数为：{this.props.number}</h2>
         <select ref="numberNode">
           <option value="1">1</option>
           <option value="2">2</option>
