@@ -1,5 +1,4 @@
 import React, { Component } from 'react'
-import store from '../redux/store'
 import { createIncrementAction, createDecrementAction } from '../redux/count_action_creator'
 
 export default class Count extends Component {
@@ -8,22 +7,22 @@ export default class Count extends Component {
   increment = () => {
     //1.获取用户输入
     let { value } = this.refs.numberNode
-    store.dispatch(createIncrementAction(value))
+    this.props.store.dispatch(createIncrementAction(value))
   }
 
   //减法
   decrement = () => {
     let { value } = this.refs.numberNode
-    store.dispatch(createDecrementAction(value))
+    this.props.store.dispatch(createDecrementAction(value))
   }
 
   //当前是奇数在加
   incrementIfOdd = () => {
     let { value } = this.refs.numberNode
-    let count = store.getState()
+    let count = this.props.store.getState()
     if (count % 2 === 1) {
       count += value
-      store.dispatch(createIncrementAction(value))
+      this.props.store.dispatch(createIncrementAction(value))
     }
   }
 
@@ -31,14 +30,14 @@ export default class Count extends Component {
   incrementAsync = () => {
     let { value } = this.refs.numberNode
     setTimeout(() => {
-      store.dispatch(createDecrementAction(value))
+      this.props.store.dispatch(createDecrementAction(value))
     }, 500)
   }
 
   render() {
     return (
       <div>
-        <h2>当前总数为：{store.getState()}</h2>
+        <h2>当前总数为：{this.props.store.getState()}</h2>
         <select ref="numberNode">
           <option value="1">1</option>
           <option value="2">2</option>

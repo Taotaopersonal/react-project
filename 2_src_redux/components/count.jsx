@@ -1,6 +1,9 @@
 import React, { Component } from 'react'
 import store from '../redux/store'
-import { createIncrementAction, createDecrementAction } from '../redux/count_action_creator'
+import {
+  createIncrementAction
+  , createDecrementAction
+} from '../redux/count_action_creator'
 
 export default class Count extends Component {
 

@@ -4,7 +4,7 @@ import App from './App'
 import store from './redux/store'
 
 
-ReactDOM.render( < App / > , document.getElementById('root'))
+ReactDOM.render(<App store={store}/> , document.getElementById('root'))
 store.subscribe(() => {
-  ReactDOM.render( < App / > , document.getElementById('root'))
+  ReactDOM.render( <App store={store}/> , document.getElementById('root'))
 })
