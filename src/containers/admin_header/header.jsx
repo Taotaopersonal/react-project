@@ -1,12 +1,13 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { Modal,Button } from 'antd'
-import { FullscreenOutlined, FullscreenExitOutlined,ExclamationCircleOutlined } from '@ant-design/icons';
+import { Modal, Button } from 'antd'
+import { FullscreenOutlined, FullscreenExitOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import screenfull from 'screenfull'
 import dayjs from 'dayjs'
-import {createDeleteUserInfoAction} from '../../../redux/actions/login'
+import { createDeleteUserInfoAction } from '../../redux/actions/login'
+import { createSaveTitleAction } from '../../redux/actions/header'
 import './css/header.less'
-import {reqWeather} from '../../../ajax'
+import { reqWeather } from '../../ajax'
 const { confirm } = Modal;
 
 
@@ -14,32 +15,31 @@ class Header extends Component {
   state = {
     isFull: false,
     date: dayjs().format('YYYY年 MM月 DD日 HH:mm:ss'),
-    weatherInfo: {
-      dayPictureUrl: '',
-      weather: '',
-      temperature:''
-    }
+    dayPictureUrl: '',
+    weather: '',
+    temperature: ''
   }
 
   fullScreen = () => {
     screenfull.toggle()
   }
-  
+
   logOut = () => {
     confirm({
       title: '确定退出吗?',
       icon: <ExclamationCircleOutlined />,
       content: '退出前请保存信息',
       cancelText: '取消',
-      okText:'确定',
-      onOk:()=>{
+      okText: '确定',
+      onOk: () => {
         this.props.logout()
+        this.props.deleteTitle('')
       }
     });
-    
+
   }
 
-  getWeather = async() => {
+  getWeather = async () => {
     const { dayPictureUrl, weather, temperature } = await reqWeather()
     this.setState({ dayPictureUrl, weather, temperature })
   }
@@ -50,8 +50,8 @@ class Header extends Component {
       this.setState({ isFull })
     })
 
-    this.timer = setInterval(()=>{
-      this.setState({date:dayjs().format('YYYY年 MM月 DD日 HH:mm:ss')})
+    this.timer = setInterval(() => {
+      this.setState({ date: dayjs().format('YYYY年 MM月 DD日 HH:mm:ss') })
     }, 1000)
 
     this.getWeather()
@@ -74,7 +74,7 @@ class Header extends Component {
         </div>
         <div className="header-bottom">
           <div className="header-bottom-left">
-            <h1>首页</h1>
+            <h1>{this.props.title}</h1>
           </div>
           <div className="header-bottom-right">
             <span>{date}</span>
@@ -88,6 +88,9 @@ class Header extends Component {
 }
 
 export default connect(
-  state => ({ name: state.userInfo.user.username }),
-  {logout:createDeleteUserInfoAction}
+  state => ({ name: state.userInfo.user.username, title: state.title }),
+  {
+    logout: createDeleteUserInfoAction,
+    deleteTitle:createSaveTitleAction
+  }
 )(Header)

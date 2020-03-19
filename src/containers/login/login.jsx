@@ -5,8 +5,9 @@ import { Form, Input, Button, message } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { reqLogin } from '../../ajax'
 import {createSaveUserInfoAction} from '../../redux/actions/login'
-import Logo from './images/logo.png'
+import Logo from '../../static/images/logo.png'
 import './css/login.less'
+const { Item } = Form
 
 class Login extends Component {
   onFinish = async (values) => {
@@ -16,7 +17,6 @@ class Login extends Component {
     if (status === 0) {
       message.success('登录成功')
       this.props.save(data)
-      this.props.history.replace('/admin')
     } else {
       message.warning(msg)
     }
@@ -41,7 +41,6 @@ class Login extends Component {
   */
     if (this.props.isLogin) return <Redirect to='/admin' />
     
-    const { Item } = Form
     return (
       <div id='login'>
         <header className="login-header">
@@ -94,6 +93,8 @@ class Login extends Component {
 
 export default connect(
   (state) => ({isLogin:state.userInfo.isLogin}),
-  {save:createSaveUserInfoAction,}
+  {
+    save: createSaveUserInfoAction,
+  }
 )(Login)
 
