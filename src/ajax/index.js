@@ -28,3 +28,5 @@ export const reqWeather = () => {
 }
 
 export const reqCategroy = () => myAxios.get('/manage/category/list')
+
+export const reqAddCategroy = (categroyName) => myAxios.post('/manage/category/add',{categroyName})

@@ -1,87 +1,110 @@
 import React, { Component } from 'react'
 import { PlusCircleOutlined } from '@ant-design/icons';
-import { Card, Button, Table, Tag } from 'antd'
+import { Card, Button, Table, Modal, Form, Input } from 'antd'
+import {reqAddCategroy} from '../../ajax/index'
 import { reqCategroy } from '../../ajax/index'
 import './css/categroy.less'
 
-const { Column, ColumnGroup } = Table;
 
 export default class Categroy extends Component {
+  state = {
+    visible: false,
+    categroyArr: []
+  };
+
+  showModal = () => {
+    this.setState({
+      visible: true,
+    });
+  };
+
+  handleOk = async() => {
+    let result = await reqAddCategroy(this.refs.categroyName.getFieldValue().categroyName)
+    console.log(result);
+    this.setState({
+      visible: false,
+    });
+  };
+
+  handleCancel = () => {
+    this.setState({
+      visible: false,
+    });
+  };
 
   getCategroyInfo = async () => {
     const response = await reqCategroy()
-    console.log(response);
+    this.setState({ categroyArr: response.data.reverse() })
+  }
+
+  componentDidMount() {
+    this.getCategroyInfo()
   }
 
   render() {
+    const { visible } = this.state;
+    const { Item } = Form
 
-    const data = [
+    const columns = [
       {
-        key: '1',
-        firstName: 'John',
-        lastName: 'Brown',
-        age: 32,
-        address: 'New York No. 1 Lake Park',
-        tags: ['nice', 'developer'],
+        title: '分类名',
+        dataIndex: 'name',
       },
       {
-        key: '2',
-        firstName: 'Jim',
-        lastName: 'Green',
-        age: 42,
-        address: 'London No. 1 Lake Park',
-        tags: ['loser'],
-      },
-      {
-        key: '3',
-        firstName: 'Joe',
-        lastName: 'Black',
-        age: 32,
-        address: 'Sidney No. 1 Lake Park',
-        tags: ['cool', 'teacher'],
+        title: '操作',
+        align: 'center',
+        width: '15%',
+        render: () => <Button type='link'>修改分类</Button>
       },
     ];
+
     return (
-      <Card className='card'
-        bordered
-        extra={<Button type="primary" shape="round" icon={<PlusCircleOutlined />}>添加</Button>}
-        onTabChange={key => {
-          this.onTabChange(key, 'key');
-        }}
+      <Card
+        className='categroy-card'
+        extra={
+          <Button
+            type='primary'
+            shape='round'
+            onClick={this.showModal}
+          >
+            <PlusCircleOutlined />
+            添加
+          </Button>
+        }
       >
-        <Table dataSource={data}>
-          <ColumnGroup title="Name">
-            <Column title="First Name" dataIndex="firstName" key="firstName" />
-            <Column title="Last Name" dataIndex="lastName" key="lastName" />
-          </ColumnGroup>
-          <Column title="Age" dataIndex="age" key="age" />
-          <Column title="Address" dataIndex="address" key="address" />
-          <Column
-            title="Tags"
-            dataIndex="tags"
-            key="tags"
-            render={tags => (
-              <span>
-                {tags.map(tag => (
-                  <Tag color="blue" key={tag}>
-                    {tag}
-                  </Tag>
-                ))}
-              </span>
-            )}
-          />
-          <Column
-            title="操作"
-            align='center'
-            key="action"
-            render={(text, record) => (
-              <span>
-                <Button style={{ marginRight: 16 }}>Invite {record.lastName}</Button>
-                <Button>添加分类</Button>
-              </span>
-            )}
-          />
-        </Table>
+        <Table
+          rowKey='_id'
+          columns={columns}
+          dataSource={this.state.categroyArr}
+          bordered
+          pagination={{ pageSize: 4 }}
+        />
+        <Modal
+          title="添加分类"
+          visible={visible}
+          okText='确定'
+          cancelText='取消'
+          onOk={this.handleOk}
+          onCancel={this.handleCancel}
+          maskClosable={false}
+        >
+          <Form ref='categroyName'
+          // initialValues={}
+          >
+            <Item
+              name='categroyName'
+              rules={[
+                {
+                  required: true,
+                  message: '分类名不能为空',
+                },
+              ]}
+            >
+              <Input placeholder='请输入分类名' />
+            </Item>
+          </Form>
+        </Modal>
+
       </Card>
     )
   }
