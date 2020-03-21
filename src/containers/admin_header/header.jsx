@@ -6,6 +6,7 @@ import screenfull from 'screenfull'
 import dayjs from 'dayjs'
 import { createDeleteUserInfoAction } from '../../redux/actions/login'
 import { createSaveTitleAction } from '../../redux/actions/header'
+import { createDeleteCategroyAction } from '../../redux/actions/categroy'
 import './css/header.less'
 import { reqWeather } from '../../ajax'
 const { confirm } = Modal;
@@ -34,6 +35,7 @@ class Header extends Component {
       onOk: () => {
         this.props.logout()
         this.props.deleteTitle('')
+        this.props.deleteCategroy()
       }
     });
 
@@ -91,6 +93,7 @@ export default connect(
   state => ({ name: state.userInfo.user.username, title: state.title }),
   {
     logout: createDeleteUserInfoAction,
-    deleteTitle:createSaveTitleAction
+    deleteTitle: createSaveTitleAction,
+    deleteCategroy:createDeleteCategroyAction
   }
 )(Header)

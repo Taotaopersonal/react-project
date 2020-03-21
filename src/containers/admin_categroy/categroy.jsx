@@ -1,60 +1,67 @@
 import React, { Component } from 'react'
 import { PlusCircleOutlined } from '@ant-design/icons';
-import { Card, Button, Table, Modal, Form, Input } from 'antd'
-import {reqAddCategroy} from '../../ajax/index'
-import { reqCategroy } from '../../ajax/index'
+import { Card, Button, Table, Modal, Form, Input, message } from 'antd'
+import { connect } from 'react-redux'
+import { createSaveCategroyAsyncAction } from '../../redux/actions/categroy'
+import { reqAddCategory, reqUpdateCategory } from '../../ajax/index'
 import './css/categroy.less'
+const { Item } = Form
 
-
-export default class Categroy extends Component {
+class Categroy extends Component {
   state = {
     visible: false,
-    categroyArr: []
   };
 
-  showModal = () => {
+  componentDidMount() {
+    this.props.saveCategroy()
+  }
+
+  showModal = (categoryObj) => {
+    console.log(categoryObj);
     this.setState({
       visible: true,
     });
   };
 
-  handleOk = async() => {
-    let result = await reqAddCategroy(this.refs.categroyName.getFieldValue().categroyName)
-    console.log(result);
-    this.setState({
-      visible: false,
-    });
+  handleOk = async () => {
+    const { categoryName } = this.refs.categroyForm.getFieldsValue()
+    if (!categoryName) return message.warning('分类名不能为空')
+    let result = await reqAddCategory(categoryName)
+    const { status, msg } = result
+    if (status === 0) {
+      this.props.saveCategroy()
+      this.setState({ visible: false });
+      this.refs.categroyForm.resetFields('')
+    } else {
+      message.error(msg)
+    }
   };
 
   handleCancel = () => {
     this.setState({
       visible: false,
     });
+    this.refs.categroyForm.resetFields('')
   };
 
-  getCategroyInfo = async () => {
-    const response = await reqCategroy()
-    this.setState({ categroyArr: response.data.reverse() })
-  }
-
-  componentDidMount() {
-    this.getCategroyInfo()
+  UpdateCategoryList = (id, name) => {
+    reqUpdateCategory(id, name)
   }
 
   render() {
     const { visible } = this.state;
-    const { Item } = Form
 
     const columns = [
       {
         title: '分类名',
         dataIndex: 'name',
+        key:'name'
       },
       {
         title: '操作',
         align: 'center',
         width: '15%',
-        render: () => <Button type='link'>修改分类</Button>
+        render: (categoryObj) => <Button onClick={() => {this.showModal(categoryObj)}} type='link'>修改分类</Button>
       },
     ];
 
@@ -67,20 +74,24 @@ export default class Categroy extends Component {
             shape='round'
             onClick={this.showModal}
           >
-            <PlusCircleOutlined />
-            添加
+            <PlusCircleOutlined />添加
           </Button>
         }
       >
         <Table
           rowKey='_id'
           columns={columns}
-          dataSource={this.state.categroyArr}
+          dataSource={this.props.categroyArr}
           bordered
-          pagination={{ pageSize: 4 }}
+          loading={this.state.isLoading}
+          pagination={{
+            pageSize: 6,
+            showQuickJumper: true,
+            hideOnSinglePage: true
+          }}
         />
         <Modal
-          title="添加分类"
+          title="新增分类"
           visible={visible}
           okText='确定'
           cancelText='取消'
@@ -88,11 +99,11 @@ export default class Categroy extends Component {
           onCancel={this.handleCancel}
           maskClosable={false}
         >
-          <Form ref='categroyName'
-          // initialValues={}
+          <Form ref='categroyForm'
+            initialValues={this.name}
           >
             <Item
-              name='categroyName'
+              name='categoryName'
               rules={[
                 {
                   required: true,
@@ -100,12 +111,17 @@ export default class Categroy extends Component {
                 },
               ]}
             >
-              <Input placeholder='请输入分类名' />
+              <Input ref='inputNode' placeholder='请输入分类名' />
             </Item>
           </Form>
         </Modal>
-
       </Card>
     )
   }
 }
+
+
+export default connect(
+  state => ({ categroyArr: state.categroyList }),
+  { saveCategroy: createSaveCategroyAsyncAction }
+)(Categroy)
