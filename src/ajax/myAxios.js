@@ -34,7 +34,7 @@ axios.interceptors.response.use(
     else {
       message.error(err.message)
     }
-    return new Promise(() => { })
+    return new Promise(() => {})
   }
 )
 

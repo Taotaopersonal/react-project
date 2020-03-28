@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import { PlusCircleOutlined } from '@ant-design/icons';
 import { Card, Button, Table, Modal, Form, Input, message } from 'antd'
 import { connect } from 'react-redux'
+import {PAGE_SIZE} from '../../config'
 import { createSaveCategroyAsyncAction } from '../../redux/actions/categroy'
 import { reqAddCategory, reqUpdateCategory } from '../../ajax/index'
 import './css/categroy.less'
@@ -17,21 +18,32 @@ class Categroy extends Component {
   }
 
   showModal = (categoryObj) => {
-    console.log(categoryObj);
-    this.setState({
-      visible: true,
-    });
+    const { _id, name } = categoryObj
+    if (_id && name) {
+      this.id = _id
+      this.name = name
+      this.isUpdate = true
+      this.setState({
+        visible: true,
+      });
+      if(this.refs.categroyForm) this.refs.categroyForm.setFieldsValue({categoryName:name})
+    } else {
+      this.setState({
+        visible: true,
+      });
+    }
   };
 
   handleOk = async () => {
     const { categoryName } = this.refs.categroyForm.getFieldsValue()
     if (!categoryName) return message.warning('分类名不能为空')
-    let result = await reqAddCategory(categoryName)
+    let result
+    this.isUpdate ? result = await reqUpdateCategory(this.id,categoryName) : result = await reqAddCategory(categoryName)
     const { status, msg } = result
     if (status === 0) {
+      message.success(this.isUpdate ? '修改分类成功！' : '添加分类成功！')
       this.props.saveCategroy()
-      this.setState({ visible: false });
-      this.refs.categroyForm.resetFields('')
+      this.handleCancel()
     } else {
       message.error(msg)
     }
@@ -41,7 +53,10 @@ class Categroy extends Component {
     this.setState({
       visible: false,
     });
-    this.refs.categroyForm.resetFields('')
+    setTimeout(()=>{
+      this.isUpdate=false
+      this.refs.categroyForm.setFieldsValue({categoryName:''})
+    },100)
   };
 
   UpdateCategoryList = (id, name) => {
@@ -55,13 +70,13 @@ class Categroy extends Component {
       {
         title: '分类名',
         dataIndex: 'name',
-        key:'name'
+        key: 'name'
       },
       {
         title: '操作',
         align: 'center',
         width: '15%',
-        render: (categoryObj) => <Button onClick={() => {this.showModal(categoryObj)}} type='link'>修改分类</Button>
+        render: (categoryObj) => <Button onClick={() => { this.showModal(categoryObj) }} type='link'>修改分类</Button>
       },
     ];
 
@@ -85,13 +100,13 @@ class Categroy extends Component {
           bordered
           loading={this.state.isLoading}
           pagination={{
-            pageSize: 6,
+            pageSize: PAGE_SIZE,
             showQuickJumper: true,
             hideOnSinglePage: true
           }}
         />
         <Modal
-          title="新增分类"
+          title={this.isUpdate ? '修改分类' : '新增分类'}
           visible={visible}
           okText='确定'
           cancelText='取消'
@@ -100,7 +115,10 @@ class Categroy extends Component {
           maskClosable={false}
         >
           <Form ref='categroyForm'
-            initialValues={this.name}
+          // 表单默认值，只有初始化以及重置时生效
+            initialValues={{
+              categoryName:this.name
+            }}
           >
             <Item
               name='categoryName'
@@ -111,7 +129,7 @@ class Categroy extends Component {
                 },
               ]}
             >
-              <Input ref='inputNode' placeholder='请输入分类名' />
+              <Input placeholder='请输入分类名' />
             </Item>
           </Form>
         </Modal>
